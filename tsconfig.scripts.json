@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        "module": "CommonJS",
+        "moduleResolution": "node",
+        "target": "es2020",
+        "esModuleInterop": true,
+        "strict": true,
+        "outDir": "dist/scripts",
+        "resolveJsonModule": true,
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "src/*"
+            ]
+        }
+    },
+    "include": [
+        "scripts/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}
