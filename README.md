@@ -6,6 +6,8 @@ Desktop only image editing tool built with nextjs, zustand and tailwindcss for A
 
 [View Live Application](https://image-composer.brimble.app)
 
+[Watch Preview Video](https://drive.google.com/file/d/1EFww8p866WZLBQKHQIdBgeC5N_HpG1VL/view?usp=sharing)
+
 ## Features
 
 ### Core Functionality
