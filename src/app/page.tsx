@@ -13,6 +13,7 @@ import ThemeSwitcher from '@/components/common/ThemeSwitcher';
 import { Separator } from '@/components/ui/Seperator';
 import { Button } from '@/components/ui/button';
 import { Toaster } from '@/components/ui/toaster';
+import { toast } from '@/hooks/useToast';
 import { useEditorStore } from '@/store/editorStore';
 
 import { Download, ImageIcon, Plus, Redo2, RotateCcw, Undo2 } from 'lucide-react';
@@ -80,6 +81,10 @@ export default function EditorPage() {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            toast({
+                title: 'Export Completed 🚀',
+                description: 'Check your downloads to view your exported image'
+            });
         }
     }, []);
 
