@@ -447,25 +447,40 @@ export const useEditorStore = create<EditorStore>()(
             }
         },
 
-        addCustomFont: (name, src) => {
+        addCustomFont: (name: string, src: string) => {
             set((state) => {
                 if (state.customFonts.some((font) => font.name === name)) {
+                    console.warn(`Font ${name} already exists`);
                     return state;
                 }
 
-                const fontFace = new FontFace(name, `url(${src})`);
+                const cleanName = name.replace(/\.(ttf|otf|woff|woff2)$/i, '');
+
+                const newFont = { name: cleanName, src };
+
+                const fontFace = new FontFace(cleanName, `url(${src})`);
                 fontFace
                     .load()
                     .then((loadedFont) => {
                         document.fonts.add(loadedFont);
+                        const currentState = get();
+                        const layersUsingFont = currentState.textLayers.filter(
+                            layer => layer.fontFamily === cleanName
+                        );
+                        if (layersUsingFont.length > 0) {
+                            set(currentState => ({
+                                ...currentState,
+                                textLayers: [...currentState.textLayers]
+                            }));
+                        }
                     })
                     .catch((error) => {
-                        console.error(`Failed to load font ${name}:`, error);
+                        console.error(`❌ Failed to load font ${cleanName}:`, error);
                     });
 
                 const newState = {
                     ...state,
-                    customFonts: [...state.customFonts, { name, src }]
+                    customFonts: [...state.customFonts, newFont]
                 };
                 return addToHistory(newState, state);
             });

@@ -46,12 +46,27 @@ export const PropertiesPanel: React.FC = () => {
     const handleFontUpload = useCallback(
         (event: React.ChangeEvent<HTMLInputElement>) => {
             const file = event.target.files?.[0];
-            if (file && (file.type === 'font/ttf' || file.type === 'font/otf')) {
-                const fontName = file.name.split('.')[0];
+            if (!file) return;
+
+            const validTypes = ['font/ttf', 'font/otf', 'application/font-sfnt', 'application/x-font-ttf'];
+            const isValidType = validTypes.includes(file.type) ||
+                               file.name.toLowerCase().endsWith('.ttf') ||
+                               file.name.toLowerCase().endsWith('.otf');
+
+            if (!isValidType) {
+                alert('Please upload a valid TTF or OTF font file.');
+                return;
+            }
+
+            try {
+                const fontName = file.name.replace(/\.(ttf|otf)$/i, '');
                 const fontUrl = URL.createObjectURL(file);
                 addCustomFont(fontName, fontUrl);
-            } else {
-                alert('Please upload a valid TTF or OTF font file.');
+
+                event.target.value = '';
+            } catch (error) {
+                console.error('Error uploading font:', error);
+                alert('Failed to upload font. Please try again.');
             }
         },
         [addCustomFont]

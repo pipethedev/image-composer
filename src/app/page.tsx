@@ -1,5 +1,4 @@
 'use client';
-import 'regenerator-runtime/runtime';
 
 import { useCallback, useEffect, useRef } from 'react';
 
@@ -15,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { useEditorStore } from '@/store/editorStore';
 
 import { Download, ImageIcon, Plus, Redo2, RotateCcw, Undo2 } from 'lucide-react';
+import 'regenerator-runtime/runtime';
 
 const FabricCanvas = dynamic(() => import('@/components/canvas/FabricCanvas').then((mod) => mod.FabricCanvas), {
     ssr: false,

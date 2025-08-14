@@ -225,7 +225,7 @@ export const LayersPanel: React.FC = () => {
                             </div>
                         ))}
                         <div className='text-muted-foreground mt-4 space-y-1 border-t pt-3 text-xs'>
-                            <div className='font-medium'>Multi-select tips:</div>
+                            <div className='font-medium'>Multi-select tips (Coming soon):</div>
                             <div>• Ctrl/Cmd + Click: Add/remove from selection</div>
                             <div>• Shift + Click: Range selection</div>
                             <div>• Use Properties panel for group transforms</div>
