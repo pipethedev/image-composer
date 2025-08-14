@@ -63,54 +63,55 @@ export const LayersPanel: React.FC = () => {
     };
 
     const addTestLayers = () => {
-        const testLayers = [
-            {
-                content: 'Header Text',
-                x: 100,
-                y: 50,
-                width: 300,
-                height: 50,
-                fontSize: 32,
-                fontFamily: 'Arial',
-                fontWeight: '700',
-                color: '#1a1a1a',
-                opacity: 1,
-                alignment: 'center' as const,
-                rotation: 0
-            },
-            {
-                content: 'Subtitle Text',
-                x: 100,
-                y: 120,
-                width: 300,
-                height: 40,
-                fontSize: 20,
-                fontFamily: 'Georgia',
-                fontWeight: '400',
-                color: '#666666',
-                opacity: 1,
-                alignment: 'center' as const,
-                rotation: 0
-            },
-            {
-                content: 'Body Text',
-                x: 100,
-                y: 180,
-                width: 300,
-                height: 60,
-                fontSize: 16,
-                fontFamily: 'Times New Roman',
-                fontWeight: '400',
-                color: '#333333',
-                opacity: 0.9,
-                alignment: 'left' as const,
-                rotation: 0
-            }
-        ];
+        throw new Error('testing error boundary');
+        // const testLayers = [
+        //     {
+        //         content: 'Header Text',
+        //         x: 100,
+        //         y: 50,
+        //         width: 300,
+        //         height: 50,
+        //         fontSize: 32,
+        //         fontFamily: 'Arial',
+        //         fontWeight: '700',
+        //         color: '#1a1a1a',
+        //         opacity: 1,
+        //         alignment: 'center' as const,
+        //         rotation: 0
+        //     },
+        //     {
+        //         content: 'Subtitle Text',
+        //         x: 100,
+        //         y: 120,
+        //         width: 300,
+        //         height: 40,
+        //         fontSize: 20,
+        //         fontFamily: 'Georgia',
+        //         fontWeight: '400',
+        //         color: '#666666',
+        //         opacity: 1,
+        //         alignment: 'center' as const,
+        //         rotation: 0
+        //     },
+        //     {
+        //         content: 'Body Text',
+        //         x: 100,
+        //         y: 180,
+        //         width: 300,
+        //         height: 60,
+        //         fontSize: 16,
+        //         fontFamily: 'Times New Roman',
+        //         fontWeight: '400',
+        //         color: '#333333',
+        //         opacity: 0.9,
+        //         alignment: 'left' as const,
+        //         rotation: 0
+        //     }
+        // ];
 
-        testLayers.forEach((layer: any, index) => {
-            setTimeout(() => addTextLayer(layer), index * 100);
-        });
+        // testLayers.forEach((layer: any, index) => {
+        //     setTimeout(() => addTextLayer(layer), index * 100);
+        // });
     };
 
     return (

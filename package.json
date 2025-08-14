@@ -49,6 +49,7 @@
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
         "react-dropzone": "^14.3.5",
+        "react-error-boundary": "^6.0.0",
         "regenerator-runtime": "^0.14.1",
         "schema-dts": "^1.1.5",
         "tailwind-merge": "^2.5.4",

@@ -1,6 +1,6 @@
 # Image Text Composer
 
-Desktop only image editing tool built with nextjs, zustand and tailwindcss
+Desktop only image editing tool built with nextjs, zustand and tailwindcss for Adomate
 
 ## Live Demo
 

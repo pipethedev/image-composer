@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import dynamic from 'next/dynamic';
 
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ImageUpload } from '@/components/ImageUpload';
 import { LayersPanel } from '@/components/LayersPanel';
 import { PropertiesPanel } from '@/components/PropertiesPanel';
@@ -132,7 +133,7 @@ export default function EditorPage() {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [textLayers, selectedLayerIds, selectedLayerId]);
+    }, [textLayers, selectedLayerIds, selectedLayerId, undo, redo]);
 
     const canUndo = historyIndex > 0;
     const canRedo = historyIndex < history.length - 1;
@@ -160,9 +161,11 @@ export default function EditorPage() {
                     </div>
                 </header>
                 <main className='flex flex-1 items-center justify-center p-8'>
-                    <div className='w-full max-w-md'>
-                        <ImageUpload />
-                    </div>
+                    <ErrorBoundary>
+                        <div className='w-full max-w-md'>
+                            <ImageUpload />
+                        </div>
+                    </ErrorBoundary>
                 </main>
             </div>
         );
@@ -172,82 +175,83 @@ export default function EditorPage() {
         <>
             <Toaster />
             <div className='bg-background flex h-screen flex-col'>
-                <header className='bg-background border-b p-4'>
-                    <div className='flex items-center justify-between'>
-                        <div className='flex items-center space-x-4'>
+                <ErrorBoundary>
+                    <header className='bg-background border-b p-4'>
+                        <div className='flex items-center justify-between'>
+                            <div className='flex items-center space-x-4'>
+                                <div className='flex items-center space-x-2'>
+                                    <ImageIcon className='h-8 w-8' />
+                                    <h1 className='text-xl font-bold opacity-80'>ImgTC.</h1>
+                                </div>
+                                <Separator orientation='vertical' className='h-6' />
+                                <div className='flex items-center space-x-1'>
+                                    <Button
+                                        variant='ghost'
+                                        size='sm'
+                                        onClick={undo}
+                                        disabled={!canUndo}
+                                        title='Undo (Ctrl+Z)'>
+                                        <Undo2 className='h-4 w-4' />
+                                    </Button>
+                                    <Button
+                                        variant='ghost'
+                                        size='sm'
+                                        onClick={redo}
+                                        disabled={!canRedo}
+                                        title='Redo (Ctrl+Y)'>
+                                        <Redo2 className='h-4 w-4' />
+                                    </Button>
+                                    <span className='text-muted-foreground px-2 text-sm'>
+                                        {historyIndex + 1}/{history.length}
+                                    </span>
+                                </div>
+                            </div>
+
                             <div className='flex items-center space-x-2'>
-                                <ImageIcon className='h-8 w-8' />
-                                <h1 className='text-xl font-bold opacity-80'>ImgTC.</h1>
-                            </div>
-                            <Separator orientation='vertical' className='h-6' />
-                            <div className='flex items-center space-x-1'>
-                                <Button
-                                    variant='ghost'
-                                    size='sm'
-                                    onClick={undo}
-                                    disabled={!canUndo}
-                                    title='Undo (Ctrl+Z)'>
-                                    <Undo2 className='h-4 w-4' />
+                                <Button variant='outline' size='sm' onClick={handleAddText}>
+                                    <Plus className='mr-2 h-4 w-4' />
+                                    Add Text
                                 </Button>
-                                <Button
-                                    variant='ghost'
-                                    size='sm'
-                                    onClick={redo}
-                                    disabled={!canRedo}
-                                    title='Redo (Ctrl+Y)'>
-                                    <Redo2 className='h-4 w-4' />
+                                <Button onClick={handleExport} disabled={textLayers.length === 0} size='sm'>
+                                    <Download className='mr-2 h-4 w-4' />
+                                    Export PNG
                                 </Button>
-                                <span className='text-muted-foreground px-2 text-sm'>
-                                    {historyIndex + 1}/{history.length}
-                                </span>
+                                <Separator orientation='vertical' className='h-6' />
+                                <Button
+                                    variant='outline'
+                                    size='sm'
+                                    onClick={reset}
+                                    className='text-destructive hover:text-destructive'
+                                    disabled={!canReset}>
+                                    <RotateCcw className='mr-2 h-4 w-4' />
+                                    Reset
+                                </Button>
+                                <Separator orientation='vertical' className='h-6' />
+                                <ThemeSwitcher />
                             </div>
                         </div>
+                    </header>
+                    <main className='flex flex-1 overflow-hidden'>
+                        <aside className='bg-muted/20 w-80 overflow-y-auto border-r p-4'>
+                            <div className='space-y-6'>
+                                <Toolbar />
+                                {hasSelection && <PropertiesPanel />}
+                                <LayersPanel />
+                            </div>
+                        </aside>
 
-                        <div className='flex items-center space-x-2'>
-                            <Button variant='outline' size='sm' onClick={handleAddText}>
-                                <Plus className='mr-2 h-4 w-4' />
-                                Add Text
-                            </Button>
-                            <Button onClick={handleExport} disabled={textLayers.length === 0} size='sm'>
-                                <Download className='mr-2 h-4 w-4' />
-                                Export PNG
-                            </Button>
-                            <Separator orientation='vertical' className='h-6' />
-                            <Button
-                                variant='outline'
-                                size='sm'
-                                onClick={reset}
-                                className='text-destructive hover:text-destructive'
-                                disabled={!canReset}>
-                                <RotateCcw className='mr-2 h-4 w-4' />
-                                Reset
-                            </Button>
-                            <Separator orientation='vertical' className='h-6' />
-                            <ThemeSwitcher />
+                        <div className='flex flex-1 items-center justify-center bg-slate-50 p-8'>
+                            <div className='relative'>
+                                <FabricCanvas
+                                    ref={canvasRef}
+                                    width={imageWidth}
+                                    height={imageHeight}
+                                    className='max-h-full max-w-full'
+                                />
+                            </div>
                         </div>
-                    </div>
-                </header>
-
-                <main className='flex flex-1 overflow-hidden'>
-                    <aside className='bg-muted/20 w-80 overflow-y-auto border-r p-4'>
-                        <div className='space-y-6'>
-                            <Toolbar />
-                            {hasSelection && <PropertiesPanel />}
-                            <LayersPanel />
-                        </div>
-                    </aside>
-
-                    <div className='flex flex-1 items-center justify-center bg-slate-50 p-8'>
-                        <div className='relative'>
-                            <FabricCanvas
-                                ref={canvasRef}
-                                width={imageWidth}
-                                height={imageHeight}
-                                className='max-h-full max-w-full'
-                            />
-                        </div>
-                    </div>
-                </main>
+                    </main>
+                </ErrorBoundary>
             </div>
         </>
     );
