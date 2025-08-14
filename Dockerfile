@@ -12,7 +12,7 @@ RUN npm install -g pnpm
 COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies using pnpm's --frozen-lockfile for CI environments
-RUN pnpm i --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # This stage builds the Next.js application using the dependencies from the 'deps' stage.
 FROM base AS builder
