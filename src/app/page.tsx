@@ -12,8 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/Seperator";
 import { useEditorStore } from "@/store/editorStore";
 
-//  jsdom error - prevents from being rendered on the server
-//  ensures it's rendered on the client
 const FabricCanvas = dynamic(
     () =>
         import("@/components/canvas/FabricCanvas").then((mod) => mod.FabricCanvas),
@@ -35,6 +33,7 @@ export default function EditorPage() {
         imageHeight,
         textLayers,
         selectedLayerId,
+        selectedLayerIds,
         history,
         historyIndex,
         addTextLayer,
@@ -82,9 +81,46 @@ export default function EditorPage() {
         }
     }, []);
 
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.target instanceof HTMLInputElement ||
+                e.target instanceof HTMLTextAreaElement ||
+                (e.target as any)?.isEditing) {
+                return;
+            }
+
+            if ((e.ctrlKey || e.metaKey)) {
+                switch (e.key.toLowerCase()) {
+                    case 'a':
+                        e.preventDefault();
+                        if (textLayers.length > 0) {
+                            const { selectMultipleLayers } = useEditorStore.getState();
+                            selectMultipleLayers(textLayers.map(l => l.id));
+                        }
+                        break;
+                    case 'd':
+                        e.preventDefault();
+                        if (selectedLayerIds.length > 0) {
+                            const { duplicateMultipleLayers, duplicateLayer } = useEditorStore.getState();
+                            if (selectedLayerIds.length > 1) {
+                                duplicateMultipleLayers(selectedLayerIds);
+                            } else if (selectedLayerId) {
+                                duplicateLayer(selectedLayerId);
+                            }
+                        }
+                        break;
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [textLayers, selectedLayerIds, selectedLayerId]);
+
     const canUndo = historyIndex > 0;
     const canRedo = historyIndex < history.length - 1;
     const canReset = !!backgroundImage;
+    const hasSelection = selectedLayerIds.length > 0;
 
     if (!backgroundImage) {
         return (
@@ -191,7 +227,7 @@ export default function EditorPage() {
                 <aside className="w-80 overflow-y-auto border-r bg-muted/20 p-4">
                     <div className="space-y-6">
                         <Toolbar />
-                        {selectedLayerId && <PropertiesPanel />}
+                        {hasSelection && <PropertiesPanel />}
                         <LayersPanel />
                     </div>
                 </aside>

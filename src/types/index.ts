@@ -14,6 +14,7 @@ export interface TextLayer {
   alignment: 'left' | 'center' | 'right';
   zIndex: number;
   isSelected: boolean;
+  isLocked: boolean;
 }
 
 export interface EditorState {

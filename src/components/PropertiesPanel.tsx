@@ -1,6 +1,6 @@
 "use client";
 
-import { AlignCenter, AlignLeft, AlignRight } from "lucide-react";
+import { AlignCenter, AlignLeft, AlignRight, Lock, Unlock, Copy, Trash2, Users } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -21,12 +21,32 @@ import { Label } from "./ui/label";
 import { Slider } from "./ui/slider";
 
 export const PropertiesPanel: React.FC = () => {
-    const { textLayers, selectedLayerId, updateTextLayer, updateTextLayerImmediate } =
-        useEditorStore();
+    const {
+        textLayers,
+        selectedLayerId,
+        selectedLayerIds,
+        updateTextLayer,
+        updateTextLayerImmediate,
+        updateMultipleLayers,
+        updateMultipleLayersImmediate,
+        toggleLayerLock,
+        duplicateLayer,
+        duplicateMultipleLayers,
+        deleteTextLayer,
+        deleteMultipleLayers
+    } = useEditorStore();
 
     const selectedLayer = textLayers.find(
         (layer) => layer.id === selectedLayerId,
     );
+
+    const selectedLayers = textLayers.filter(
+        (layer) => selectedLayerIds.includes(layer.id)
+    );
+
+    const isMultiSelect = selectedLayerIds.length > 1;
+    const hasLockedLayers = selectedLayers.some(layer => layer.isLocked);
+    const allLayersLocked = selectedLayers.length > 0 && selectedLayers.every(layer => layer.isLocked);
 
     const [localContent, setLocalContent] = useState(selectedLayer?.content ?? "");
 
@@ -37,19 +57,19 @@ export const PropertiesPanel: React.FC = () => {
     }, [selectedLayer?.content, selectedLayer?.id]);
 
     useEffect(() => {
-        if (!selectedLayer || localContent === selectedLayer.content) return;
+        if (!selectedLayer || localContent === selectedLayer.content || selectedLayer.isLocked) return;
 
         const timeoutId = setTimeout(() => {
             updateTextLayer(selectedLayer.id, { content: localContent });
         }, 500);
 
         return () => clearTimeout(timeoutId);
-    }, [localContent]);
+    }, [localContent, selectedLayer, updateTextLayer]);
 
     const handleContentChange = useCallback(
         (value: string) => {
             setLocalContent(value);
-            if (selectedLayer) {
+            if (selectedLayer && !selectedLayer.isLocked) {
                 updateTextLayerImmediate(selectedLayer.id, { content: value });
             }
         },
@@ -58,15 +78,62 @@ export const PropertiesPanel: React.FC = () => {
 
     const handleUpdate = useCallback(
         (updates: Partial<TextLayer>) => {
-            if (selectedLayer) {
+            if (isMultiSelect) {
+                updateMultipleLayers(selectedLayerIds, updates);
+            } else if (selectedLayer && !selectedLayer.isLocked) {
                 updateTextLayer(selectedLayer.id, updates);
             }
         },
-        [selectedLayer, updateTextLayer],
+        [selectedLayer, selectedLayerIds, isMultiSelect, updateTextLayer, updateMultipleLayers],
     );
 
-    if (!selectedLayer) {
-        return null;
+    const handleToggleLock = useCallback(() => {
+        selectedLayerIds.forEach(id => {
+            toggleLayerLock(id);
+        });
+    }, [selectedLayerIds, toggleLayerLock]);
+
+    const handleDuplicate = useCallback(() => {
+        if (isMultiSelect) {
+            duplicateMultipleLayers(selectedLayerIds);
+        } else if (selectedLayer) {
+            duplicateLayer(selectedLayer.id);
+        }
+    }, [selectedLayer, selectedLayerIds, isMultiSelect, duplicateLayer, duplicateMultipleLayers]);
+
+    const handleDelete = useCallback(() => {
+        if (isMultiSelect) {
+            deleteMultipleLayers(selectedLayerIds);
+        } else if (selectedLayer) {
+            deleteTextLayer(selectedLayer.id);
+        }
+    }, [selectedLayer, selectedLayerIds, isMultiSelect, deleteTextLayer, deleteMultipleLayers]);
+
+    const getCommonValue = <T,>(getter: (layer: TextLayer) => T): T | null => {
+        if (selectedLayers.length === 0) return null;
+        const firstValue = getter(selectedLayers[0]);
+        return selectedLayers.every(layer => getter(layer) === firstValue) ? firstValue : null;
+    };
+
+    const commonFontFamily = getCommonValue(layer => layer.fontFamily);
+    const commonFontSize = getCommonValue(layer => layer.fontSize);
+    const commonFontWeight = getCommonValue(layer => layer.fontWeight);
+    const commonColor = getCommonValue(layer => layer.color);
+    const commonOpacity = getCommonValue(layer => layer.opacity);
+    const commonAlignment = getCommonValue(layer => layer.alignment);
+    const commonRotation = getCommonValue(layer => layer.rotation);
+
+    if (selectedLayerIds.length === 0) {
+        return (
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold">Properties</h3>
+                </div>
+                <div className="text-sm text-muted-foreground text-center py-8">
+                    Select a layer to edit its properties
+                </div>
+            </div>
+        );
     }
 
     const alignmentButtons = [
@@ -78,30 +145,82 @@ export const PropertiesPanel: React.FC = () => {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold">Properties</h3>
+                <h3 className="text-sm font-semibold">
+                    {isMultiSelect ? (
+                        <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4" />
+                            Properties ({selectedLayerIds.length} layers)
+                        </div>
+                    ) : (
+                        "Properties"
+                    )}
+                </h3>
             </div>
 
-            {/* Text Content */}
-            <div className="space-y-2">
-                <Label htmlFor="content">Text Content</Label>
-                <Textarea
-                    id="content"
-                    value={localContent}
-                    onChange={(e) => handleContentChange(e.target.value)}
-                    placeholder="Enter your text..."
-                    rows={3}
-                />
+            <div className="flex gap-2">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleToggleLock}
+                    className="flex-1"
+                    title={allLayersLocked ? "Unlock layers" : "Lock layers"}
+                >
+                    {allLayersLocked ? (
+                        <Lock className="h-4 w-4" />
+                    ) : (
+                        <Unlock className="h-4 w-4" />
+                    )}
+                </Button>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDuplicate}
+                    className="flex-1"
+                    title="Duplicate layers"
+                >
+                    <Copy className="h-4 w-4" />
+                </Button>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDelete}
+                    className="flex-1"
+                    title="Delete layers"
+                    disabled={allLayersLocked}
+                >
+                    <Trash2 className="h-4 w-4" />
+                </Button>
             </div>
 
-            {/* Font Family */}
+            {hasLockedLayers && (
+                <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded">
+                    {allLayersLocked ? "All selected layers are locked" : "Some selected layers are locked"}
+                </div>
+            )}
+
+            {!isMultiSelect && selectedLayer && (
+                <div className="space-y-2">
+                    <Label htmlFor="content">Text Content</Label>
+                    <Textarea
+                        id="content"
+                        value={localContent}
+                        onChange={(e) => handleContentChange(e.target.value)}
+                        placeholder="Enter your text..."
+                        rows={3}
+                        disabled={selectedLayer.isLocked}
+                    />
+                </div>
+            )}
+
             <div className="space-y-2">
                 <Label htmlFor="fontFamily">Font Family</Label>
                 <Select
-                    value={selectedLayer.fontFamily}
+                    value={commonFontFamily || ""}
                     onValueChange={(value) => handleUpdate({ fontFamily: value })}
+                    disabled={allLayersLocked}
                 >
                     <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder={isMultiSelect ? "Mixed" : "Select font"} />
                     </SelectTrigger>
                     <SelectContent className="max-h-60">
                         {GOOGLE_FONTS.map((font) => (
@@ -117,29 +236,29 @@ export const PropertiesPanel: React.FC = () => {
                 </Select>
             </div>
 
-            {/* Font Size */}
             <div className="space-y-2">
                 <Label htmlFor="fontSize">
-                    Font Size: {selectedLayer.fontSize}px
+                    Font Size: {commonFontSize !== null ? `${commonFontSize}px` : "Mixed"}
                 </Label>
                 <Slider
-                    value={[selectedLayer.fontSize]}
+                    value={commonFontSize !== null ? [commonFontSize] : [16]}
                     onValueChange={(value) => handleUpdate({ fontSize: value[0] })}
                     min={8}
                     max={200}
                     step={1}
+                    disabled={allLayersLocked}
                 />
             </div>
 
-            {/* Font Weight */}
             <div className="space-y-2">
                 <Label htmlFor="fontWeight">Font Weight</Label>
                 <Select
-                    value={selectedLayer.fontWeight}
+                    value={commonFontWeight || ""}
                     onValueChange={(value) => handleUpdate({ fontWeight: value })}
+                    disabled={allLayersLocked}
                 >
                     <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder={isMultiSelect ? "Mixed" : "Select weight"} />
                     </SelectTrigger>
                     <SelectContent>
                         {FONT_WEIGHT.map((item) => (
@@ -151,41 +270,41 @@ export const PropertiesPanel: React.FC = () => {
                 </Select>
             </div>
 
-            {/* Text Color */}
             <div className="space-y-2">
                 <Label htmlFor="color">Text Color</Label>
                 <div className="flex space-x-2">
                     <Input
                         id="color"
                         type="color"
-                        value={selectedLayer.color}
+                        value={commonColor || "#000000"}
                         onChange={(e) => handleUpdate({ color: e.target.value })}
                         className="h-10 w-16 rounded border p-1"
+                        disabled={allLayersLocked}
                     />
                     <Input
-                        value={selectedLayer.color}
+                        value={commonColor || ""}
                         onChange={(e) => handleUpdate({ color: e.target.value })}
-                        placeholder="#000000"
+                        placeholder={isMultiSelect ? "Mixed colors" : "#000000"}
                         className="flex-1"
+                        disabled={allLayersLocked}
                     />
                 </div>
             </div>
 
-            {/* Opacity */}
             <div className="space-y-2">
                 <Label htmlFor="opacity">
-                    Opacity: {Math.round(selectedLayer.opacity * 100)}%
+                    Opacity: {commonOpacity !== null ? `${Math.round(commonOpacity * 100)}%` : "Mixed"}
                 </Label>
                 <Slider
-                    value={[selectedLayer.opacity]}
+                    value={commonOpacity !== null ? [commonOpacity] : [1]}
                     onValueChange={(value) => handleUpdate({ opacity: value[0] })}
                     min={0}
                     max={1}
                     step={0.01}
+                    disabled={allLayersLocked}
                 />
             </div>
 
-            {/* Text Alignment */}
             <div className="space-y-2">
                 <Label>Text Alignment</Label>
                 <div className="flex space-x-1">
@@ -193,12 +312,13 @@ export const PropertiesPanel: React.FC = () => {
                         <Button
                             key={value}
                             variant={
-                                selectedLayer.alignment === value ? "default" : "outline"
+                                commonAlignment === value ? "default" : "outline"
                             }
                             size="sm"
                             onClick={() => handleUpdate({ alignment: value })}
                             className="flex-1"
                             title={label}
+                            disabled={allLayersLocked}
                         >
                             <Icon className="h-4 w-4" />
                         </Button>
@@ -206,76 +326,81 @@ export const PropertiesPanel: React.FC = () => {
                 </div>
             </div>
 
-            {/* Position & Size */}
-            <div className="space-y-4">
-                <Label>Position & Size</Label>
-                <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-1">
-                        <Label htmlFor="x" className="text-xs">
-                            X
-                        </Label>
-                        <Input
-                            id="x"
-                            type="number"
-                            value={Math.round(selectedLayer.x)}
-                            onChange={(e) =>
-                                handleUpdate({ x: Number(e.target.value) })
-                            }
-                        />
-                    </div>
-                    <div className="space-y-1">
-                        <Label htmlFor="y" className="text-xs">
-                            Y
-                        </Label>
-                        <Input
-                            id="y"
-                            type="number"
-                            value={Math.round(selectedLayer.y)}
-                            onChange={(e) =>
-                                handleUpdate({ y: Number(e.target.value) })
-                            }
-                        />
-                    </div>
-                    <div className="space-y-1">
-                        <Label htmlFor="width" className="text-xs">
-                            Width
-                        </Label>
-                        <Input
-                            id="width"
-                            type="number"
-                            value={Math.round(selectedLayer.width)}
-                            onChange={(e) =>
-                                handleUpdate({ width: Number(e.target.value) })
-                            }
-                        />
-                    </div>
-                    <div className="space-y-1">
-                        <Label htmlFor="height" className="text-xs">
-                            Height
-                        </Label>
-                        <Input
-                            id="height"
-                            type="number"
-                            value={Math.round(selectedLayer.height)}
-                            onChange={(e) =>
-                                handleUpdate({ height: Number(e.target.value) })
-                            }
-                        />
+            {!isMultiSelect && selectedLayer && (
+                <div className="space-y-4">
+                    <Label>Position & Size</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                            <Label htmlFor="x" className="text-xs">
+                                X
+                            </Label>
+                            <Input
+                                id="x"
+                                type="number"
+                                value={Math.round(selectedLayer.x)}
+                                onChange={(e) =>
+                                    handleUpdate({ x: Number(e.target.value) })
+                                }
+                                disabled={selectedLayer.isLocked}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="y" className="text-xs">
+                                Y
+                            </Label>
+                            <Input
+                                id="y"
+                                type="number"
+                                value={Math.round(selectedLayer.y)}
+                                onChange={(e) =>
+                                    handleUpdate({ y: Number(e.target.value) })
+                                }
+                                disabled={selectedLayer.isLocked}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="width" className="text-xs">
+                                Width
+                            </Label>
+                            <Input
+                                id="width"
+                                type="number"
+                                value={Math.round(selectedLayer.width)}
+                                onChange={(e) =>
+                                    handleUpdate({ width: Number(e.target.value) })
+                                }
+                                disabled={selectedLayer.isLocked}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="height" className="text-xs">
+                                Height
+                            </Label>
+                            <Input
+                                id="height"
+                                type="number"
+                                value={Math.round(selectedLayer.height)}
+                                onChange={(e) =>
+                                    handleUpdate({ height: Number(e.target.value) })
+                                }
+                                disabled={selectedLayer.isLocked}
+                            />
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
-            {/* Rotation */}
             <div className="space-y-2">
                 <Label htmlFor="rotation">
-                    Rotation: {Math.round(selectedLayer.rotation)}°
+                    Rotation: {commonRotation !== null ? `${Math.round(commonRotation)}°` : "Mixed"}
                 </Label>
                 <Slider
-                    value={[selectedLayer.rotation]}
+                    value={commonRotation !== null ? [commonRotation] : [0]}
                     onValueChange={(value) => handleUpdate({ rotation: value[0] })}
                     min={-180}
                     max={180}
                     step={1}
+                    disabled={allLayersLocked}
                 />
             </div>
         </div>

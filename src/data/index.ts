@@ -30,7 +30,6 @@ export const getCategories = () => {
         count: logos.filter((logo) => logo.categories.includes(category)).length
     }));
 
-    // a-z
     categoriesWithCounts.sort((a, b) => a.name.localeCompare(b.name));
 
     return categoriesWithCounts as ICategory[];
