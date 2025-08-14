@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/hooks/useToast';
 import { GOOGLE_FONTS } from '@/lib/google-font';
 import { useEditorStore } from '@/store/editorStore';
 import type { TextLayer } from '@/types';
@@ -49,12 +50,16 @@ export const PropertiesPanel: React.FC = () => {
             if (!file) return;
 
             const validTypes = ['font/ttf', 'font/otf', 'application/font-sfnt', 'application/x-font-ttf'];
-            const isValidType = validTypes.includes(file.type) ||
-                               file.name.toLowerCase().endsWith('.ttf') ||
-                               file.name.toLowerCase().endsWith('.otf');
+            const isValidType =
+                validTypes.includes(file.type) ||
+                file.name.toLowerCase().endsWith('.ttf') ||
+                file.name.toLowerCase().endsWith('.otf');
 
             if (!isValidType) {
-                alert('Please upload a valid TTF or OTF font file.');
+                toast({
+                    title: 'Upload Error',
+                    description: 'Please upload a valid TTF or OTF font file.'
+                });
                 return;
             }
 
@@ -64,9 +69,15 @@ export const PropertiesPanel: React.FC = () => {
                 addCustomFont(fontName, fontUrl);
 
                 event.target.value = '';
+                toast({
+                    title: 'Upload Successful ✅',
+                    description: `${fontName} is ready to use !`
+                });
             } catch (error) {
-                console.error('Error uploading font:', error);
-                alert('Failed to upload font. Please try again.');
+                toast({
+                    title: 'Upload Error',
+                    description: 'Failed to upload font. Please try again.'
+                });
             }
         },
         [addCustomFont]
@@ -236,7 +247,7 @@ export const PropertiesPanel: React.FC = () => {
                     type='file'
                     accept='.ttf,.otf'
                     onChange={handleFontUpload}
-                    className='text-sm cursor-pointer'
+                    className='cursor-pointer text-sm'
                     disabled={allLayersLocked}
                 />
             </div>

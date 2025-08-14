@@ -475,7 +475,7 @@ export const useEditorStore = create<EditorStore>()(
                         }
                     })
                     .catch((error) => {
-                        console.error(`❌ Failed to load font ${cleanName}:`, error);
+                        console.error(`Failed to load font ${cleanName}:`, error);
                     });
 
                 const newState = {
