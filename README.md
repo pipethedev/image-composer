@@ -1,160 +1,144 @@
 # Image Text Composer
 
-A desktop-only, single-page image editing tool built with Next.js and TypeScript that enables users to upload PNG images and overlay them with fully customizable text.
+Desktop only image editing tool built with nextjs, zustand and tailwindcss
 
-## 🚀 Quick Start
+## Live Demo
+
+[View Live Application](https://image-composer.brimble.app)
+
+## Features
+
+### Core Functionality
+- **Image Upload**: Drag & drop PNG images with automatic canvas aspect ratio matching
+- **Multi-layer Text Editing**: Add unlimited text layers with comprehensive styling options
+- **Advanced Text Properties**:
+  - Font family selection (all Google Fonts available)
+  - Font size, weight, color, and opacity controls
+  - Text alignment (left, center, right)
+  - Multi-line text support
+- **Interactive Transformations**: Drag, resize, and rotate text layers with precision handles
+- **Layer Management**: Reorder layers with drag-and-drop z-index control
+- **Undo/Redo**: 20-step history with visual indicators
+- **Auto-save**: Automatic localStorage persistence
+- **PNG Export**: Export original image dimensions
+
+### Bonus Features Implemented
+- **Lock/Unlock Layers**: Prevent accidental modifications
+- **Duplicate Layers**: Clone layers with offset positioning
+- **Advanced Typography**: Line-height and letter-spacing controls
+- **Keyboard Shortcuts**: Efficient workflow with key combinations
+
+## 🛠 Technology Stack
+
+### Core Technologies
+- **Next.js 14**
+- **TypeScript**
+- **Fabric.js**
+- **Zustand**
+- **Tailwind CSS**
+- **Google Fonts API**
+
+### State Management
+The application uses Zustand for global state management with a centralized store pattern:
+
+```
+src/store/editorStore.ts - Central state management
+├── Editor state (background, layers, selection)
+├── History management (undo/redo with 20 steps)
+├── Multi-layer operations (select, transform, delete)
+└── Auto-save with localStorage persistence
+```
+
+### Component Structure
+```
+src/components/
+├── canvas/
+│   └── FabricCanvas.tsx
+├── panels/
+│   ├── LayersPanel.tsx
+│   ├── PropertiesPanel.tsx
+│   └── ToolsPanel.tsx
+└── ui/
+```
+
+### Key Design Decisions
+
+**Fabric.js Choice**: Selected for its mature canvas manipulation capabilities, built-in transformation handles, and extensive text rendering features. Provides smooth 60fps interactions and precise object control.
+
+**Zustand over Redux**: Chosen for its minimal boilerplate, excellent TypeScript support, and built-in persistence middleware. Reduces complexity while maintaining powerful state management.
+
+**Component Separation**: Clear separation between canvas operations (FabricCanvas) and UI controls (panels), enabling independent development and testing.
+
+## 🚀 Getting Started
 
 ### Prerequisites
-
-- Node.js (v24 or higher recommended, as per `Dockerfile`)
-- pnpm
+- Node.js 18+ 
+- npm or yarn package manager
 
 ### Installation
 
-1. **Clone the repository**
-
-    ```bash
-    git clone https://github.com/pipe-dev/image-text-composer.git
-    cd image-text-composer
-    ```
-
-2. **Install dependencies**
-
-    ```bash
-    pnpm install
-    ```
-
-3. **Run the development server**
-
-    ```bash
-    pnpm dev
-    ```
-
-    Open [http://localhost:3000](http://localhost:3000) in your browser. The app uses Next.js's Turbopack for fast development.
-
-## 📁 Project Structure
-
-```
-src/
-├── app/
-│   ├── globals.css          # Global styles and CSS variables
-│   ├── layout.tsx           # Root layout component
-│   └── page.tsx             # Main editor page
-├── components/
-│   ├── canvas/
-│   │   └── FabricCanvas.tsx # Main canvas component using Fabric.js
-│   └── ui/                  # UI components from shadcn/ui (midday ui)
-│   ├── ImageUpload.tsx      # Drag & drop image upload
-│   ├── LayersPanel.tsx      # Layer management panel
-│   ├── PropertiesPanel.tsx  # Text properties editor
-│   └── Toolbar.tsx          # Main toolbar with actions
-├── config/
-│   └── env.ts               # Environment variable configuration
-├── hooks/
-│   └── useToast.ts          # Custom toast hook
-├── lib/
-│   ├── google-font.ts       # Google Fonts list
-├── store/
-│   └── editorStore.ts       # Zustand store for state management
-└── utils/
-    ├── constant.ts          # Application constants
-    └── index.ts             # Helper functions
+1. Clone the repository:
+```bash
+git clone https://github.com/pipethedev/image-composer.git
+cd image-composer
 ```
 
-## 🔧 Configuration
+2. Install dependencies:
+```bash
+npm install
+# or
+yarn install
+```
 
-### Environment Variables
+3. Run the development server:
+```bash
+npm run dev
+# or
+yarn dev
+```
 
-Create a `.env.local` file by copying `.env.example` and provide the necessary values:
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+### Building for Production
 
 ```bash
-# Public URL of the application
-NEXT_PUBLIC_ROOT_DOMAIN="http://localhost:3000"
-
-# Google Analytics ID (optional)
-NEXT_PUBLIC_GOOGLE_ANALYTICS="G-XXXXXXXXXX"
+npm run build
+npm start
 ```
 
-## 🏗️ Architecture Overview
+## Usage Guide
 
-### State Management (Zustand)
+1. **Upload Image**: Drag and drop a PNG file or click to browse
+2. **Add Text**: Click "Add Text" to create a new text layer
+3. **Edit Text**: Double-click any text layer to edit content inline
+4. **Style Text**: Use the Properties panel to adjust font, size, color, etc.
+5. **Transform**: Drag to move, use corner handles to resize/rotate
+6. **Layer Management**: Reorder layers in the Layers panel
+7. **Multi-select**: Hold Ctrl/Cmd and click multiple layers, or use "Select All"
+8. **Export**: Click "Export PNG" to download your design
 
-- **Centralized state** for canvas elements, layers, and history.
-- **Undo/Redo system** for canvas actions.
+### Keyboard Shortcuts
+- `Ctrl/Cmd + Z`: Undo
+- `Ctrl/Cmd + Y`: Redo
+- `Delete/Backspace`: Delete selected layers
 
-### Canvas Rendering (Fabric.js)
+## Some Technical Highlights
 
-- **Hardware-accelerated** text and image manipulation.
-- **Real-time updates** for smooth interactions.
-- **Export functionality** to download the canvas as a PNG.
+### Performance Optimizations
+- **Selective Re-rendering**: Only affected components update when state changes
+- **Efficient Canvas Operations**: Fabric.js object pooling and optimized rendering
+- **Font Caching**: Google Fonts are cached after first load
 
-### UI Components (shadcn/ui + Tailwind CSS)
+### Code Quality
+- **TypeScript Strict Mode**: Full type safety throughout the application
+- **Modular Architecture**: Clear separation of concerns with reusable components
+- **Custom Hooks**: Encapsulated logic for canvas operations and state management
+- **Error Boundaries**: Robust error handling and recovery
 
-- **Consistent design system** for a clean user interface.
-- **Responsive layout** optimized for desktop use.
-- **Accessible components** built on Radix UI.
+## Known Limitations
 
-## 🚀 Deployment
+- Multi-select with group transforms
+ 
+---
 
-The project includes `Dockerfile` and `Dockerfile.bun` for containerized deployments.
-
-### Vercel (Recommended)
-
-1. **Push to a Git provider** (GitHub, GitLab, Bitbucket).
-2. **Deploy to Vercel**
-    - Connect your Git repository to Vercel.
-    - Vercel will automatically detect the Next.js configuration and deploy the application.
-    - Add the environment variables from your `.env.local` file to the Vercel project settings.
-
-### Build Locally
-
-```bash
-pnpm build
-pnpm start
-```
-
-## 🔥 Key Features Implemented
-
-- ✅ **PNG Image Upload** with drag & drop.
-- ✅ **Multiple Text Layers** with full customization (font, size, color, alignment).
-- ✅ **Google Fonts Integration** with a curated list of fonts.
-- ✅ **Drag, Resize, and Rotate** text directly on the canvas.
-- ✅ **Layer Management** (add, delete, select).
-- ✅ **Undo/Redo** functionality for canvas changes.
-- ✅ **PNG Export** of the final composed image.
-- ✅ **Code Generation** for SVG, React, and Vue components.
-
-## 🧪 Development
-
-The following scripts are available for maintaining code quality:
-
-- **Type Checking**:
-
-    ```bash
-    pnpm type-check
-    ```
-
-- **Linting**:
-
-    ```bash
-    pnpm lint
-    ```
-
-- **Fix Linting Issues**:
-
-    ```bash
-    pnpm lint:fix
-    ```
-
-- **Code Formatting**:
-
-    ```bash
-    pnpm format
-    ```
-
-## 📝 Notes
-
-- **Desktop-only**: The UI/UX is optimized for desktop browsers.
-- **PNG-only**: Currently supports PNG for both upload and export.
-- **Client-side**: All image processing and state management happen in the browser.
-- **No backend**: The application is a fully static Next.js app.
+Built by Muritala David for the Adomate Full Stack Engineer Challenge
