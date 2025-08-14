@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
         optimizePackageImports: ['lucide-react', 'fabric']
     },
 
-    output: 'export',
+    output: 'standalone',
     trailingSlash: true,
     images: {
         unoptimized: true
