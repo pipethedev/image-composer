@@ -6,8 +6,6 @@ Desktop only image editing tool built with nextjs, zustand and tailwindcss for A
 
 [View Live Application](https://image-composer.brimble.app)
 
-[Watch Preview Video](https://drive.google.com/file/d/1EFww8p866WZLBQKHQIdBgeC5N_HpG1VL/view?usp=sharing)
-
 ## Features
 
 ### Core Functionality
@@ -29,6 +27,7 @@ Desktop only image editing tool built with nextjs, zustand and tailwindcss for A
 - **Duplicate Layers**: Clone layers with offset positioning
 - **Advanced Typography**: Line-height and letter-spacing controls
 - **Keyboard Shortcuts**: Efficient workflow with key combinations
+- **Theme Management**: Light/Dark Mode Support
 
 ## 🛠 Technology Stack
 
@@ -65,7 +64,7 @@ src/components/
 
 ### Key Design Decisions
 
-**Fabric.js Choice**: Selected for its mature canvas manipulation capabilities, built-in transformation handles, and extensive text rendering features. Provides smooth 60fps interactions and precise object control.
+**Fabric.js Choice**: Selected for its mature canvas manipulation capabilities, built-in transformation handles, and extensive text rendering features. Provides smooth interactions and precise object control.
 
 **Zustand over Redux**: Chosen for its minimal boilerplate, excellent TypeScript support, and built-in persistence middleware. Reduces complexity while maintaining powerful state management.
 
