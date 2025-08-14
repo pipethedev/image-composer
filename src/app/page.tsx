@@ -173,9 +173,9 @@ export default function EditorPage() {
 
     return (
         <>
-            <Toaster />
-            <div className='bg-background flex h-screen flex-col'>
-                <ErrorBoundary>
+            <ErrorBoundary>
+                <Toaster />
+                <div className='bg-background flex h-screen flex-col'>
                     <header className='bg-background border-b p-4'>
                         <div className='flex items-center justify-between'>
                             <div className='flex items-center space-x-4'>
@@ -251,8 +251,8 @@ export default function EditorPage() {
                             </div>
                         </div>
                     </main>
-                </ErrorBoundary>
-            </div>
+                </div>
+            </ErrorBoundary>
         </>
     );
 }
