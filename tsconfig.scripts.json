@@ -9,15 +9,9 @@
         "resolveJsonModule": true,
         "baseUrl": ".",
         "paths": {
-            "@/*": [
-                "src/*"
-            ]
+            "@/*": ["src/*"]
         }
     },
-    "include": [
-        "scripts/**/*.ts"
-    ],
-    "exclude": [
-        "node_modules"
-    ]
+    "include": ["scripts/**/*.ts"],
+    "exclude": ["node_modules"]
 }

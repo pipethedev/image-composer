@@ -1,16 +1,12 @@
-"use client";
+'use client';
 
-import * as fabric from "fabric";
-import {
-    forwardRef,
-    useCallback,
-    useEffect,
-    useImperativeHandle,
-    useRef,
-} from "react";
-import { useEditorStore } from "@/store/editorStore";
-import type { TextLayer } from "@/types";
-import { loadGoogleFont, loadImage } from "@/utils/canvas";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from 'react';
+
+import { useEditorStore } from '@/store/editorStore';
+import type { TextLayer } from '@/types';
+import { loadFont, loadImage } from '@/utils/canvas';
+
+import * as fabric from 'fabric';
 
 interface FabricCanvasProps {
     width?: number;
@@ -23,7 +19,7 @@ export interface FabricCanvasHandle {
 }
 
 export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
-    ({ width = 800, height = 600, className = "" }, ref) => {
+    ({ width = 800, height = 600, className = '' }, ref) => {
         const canvasRef = useRef<HTMLCanvasElement>(null);
         const fabricCanvasRef = useRef<fabric.Canvas | null>(null);
 
@@ -36,15 +32,18 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
             updateTextLayerImmediate,
             selectLayer,
             deleteTextLayer,
+            customFonts
         } = useEditorStore();
 
         useImperativeHandle(ref, () => ({
             exportCanvas: () => {
                 const canvas = fabricCanvasRef.current;
-                if (!canvas) return "";
-                return canvas.toDataURL({ format: "png", quality: 1, multiplier: 1 });
-            },
+                if (!canvas) return '';
+                return canvas.toDataURL({ format: 'png', quality: 1, multiplier: 1 });
+            }
         }));
+
+
 
         const updateLayerFromFabricObject = useCallback(
             (fabricObject: fabric.Object) => {
@@ -54,7 +53,7 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
                 const updates: Partial<TextLayer> = {
                     x: fabricObject.left ?? 0,
                     y: fabricObject.top ?? 0,
-                    rotation: fabricObject.angle ?? 0,
+                    rotation: fabricObject.angle ?? 0
                 };
 
                 if (fabricObject.scaleX && fabricObject.scaleY) {
@@ -65,7 +64,7 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
 
                 updateTextLayer(layerId, updates);
             },
-            [updateTextLayer],
+            [updateTextLayer]
         );
 
         const moveActiveObject = useCallback(
@@ -77,13 +76,13 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
                 if (activeObject) {
                     activeObject.set({
                         left: (activeObject.left ?? 0) + deltaX,
-                        top: (activeObject.top ?? 0) + deltaY,
+                        top: (activeObject.top ?? 0) + deltaY
                     });
                     canvas.renderAll();
                     updateLayerFromFabricObject(activeObject);
                 }
             },
-            [updateLayerFromFabricObject],
+            [updateLayerFromFabricObject]
         );
 
         useEffect(() => {
@@ -92,8 +91,8 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
             const canvas = new fabric.Canvas(canvasRef.current, {
                 width,
                 height,
-                backgroundColor: "#f8f9fa",
-                preserveObjectStacking: true,
+                backgroundColor: '#f8f9fa',
+                preserveObjectStacking: true
             });
             fabricCanvasRef.current = canvas;
 
@@ -102,14 +101,14 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
                 selectLayer(activeObject ? (activeObject as any).data.layerId : null);
             };
 
-            canvas.on("selection:created", handleSelection);
-            canvas.on("selection:updated", handleSelection);
-            canvas.on("selection:cleared", () => selectLayer(null));
-            canvas.on("object:modified", (e) => {
+            canvas.on('selection:created', handleSelection);
+            canvas.on('selection:updated', handleSelection);
+            canvas.on('selection:cleared', () => selectLayer(null));
+            canvas.on('object:modified', (e) => {
                 if (e.target) updateLayerFromFabricObject(e.target);
             });
 
-            canvas.on("text:changed", (e) => {
+            canvas.on('text:changed', (e) => {
                 const target = e.target as fabric.Textbox;
                 const layerId = (target as any).data?.layerId;
                 if (layerId && target.text) {
@@ -117,7 +116,7 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
                 }
             });
 
-            canvas.on("editing:exited", (e) => {
+            canvas.on('editing:exited', (e: any) => {
                 const target = e.target as fabric.Textbox;
                 const layerId = (target as any).data?.layerId;
                 if (layerId && target.text) {
@@ -130,35 +129,35 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
                 const activeObject = canvas.getActiveObject();
 
                 switch (e.key) {
-                    case "Delete":
-                    case "Backspace":
+                    case 'Delete':
+                    case 'Backspace':
                         if (activeObject && (activeObject as any).data?.layerId) {
                             deleteTextLayer((activeObject as any).data.layerId);
                         }
                         break;
-                    case "ArrowUp":
+                    case 'ArrowUp':
                         e.preventDefault();
                         moveActiveObject(0, e.shiftKey ? -10 : -1);
                         break;
-                    case "ArrowDown":
+                    case 'ArrowDown':
                         e.preventDefault();
                         moveActiveObject(0, e.shiftKey ? 10 : 1);
                         break;
-                    case "ArrowLeft":
+                    case 'ArrowLeft':
                         e.preventDefault();
                         moveActiveObject(e.shiftKey ? -10 : -1, 0);
                         break;
-                    case "ArrowRight":
+                    case 'ArrowRight':
                         e.preventDefault();
                         moveActiveObject(e.shiftKey ? 10 : 1, 0);
                         break;
                 }
             };
 
-            document.addEventListener("keydown", handleKeyDown);
+            document.addEventListener('keydown', handleKeyDown);
 
             return () => {
-                document.removeEventListener("keydown", handleKeyDown);
+                document.removeEventListener('keydown', handleKeyDown);
                 canvas.dispose();
                 fabricCanvasRef.current = null;
             };
@@ -170,7 +169,7 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
             updateLayerFromFabricObject,
             moveActiveObject,
             updateTextLayer,
-            updateTextLayerImmediate,
+            updateTextLayerImmediate
         ]);
 
         useEffect(() => {
@@ -180,11 +179,7 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
             const maxDisplayWidth = 1200;
             const maxDisplayHeight = 650;
 
-            const scale = Math.min(
-                maxDisplayWidth / imageWidth,
-                maxDisplayHeight / imageHeight,
-                1,
-            );
+            const scale = Math.min(maxDisplayWidth / imageWidth, maxDisplayHeight / imageHeight, 1);
 
             const displayWidth = imageWidth * scale;
             const displayHeight = imageHeight * scale;
@@ -202,7 +197,7 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
                 const fabricImg = new fabric.Image(img, {
                     selectable: false,
                     evented: false,
-                    excludeFromExport: false,
+                    excludeFromExport: false
                 });
 
                 const canvasWidth = imageWidth ?? width;
@@ -220,7 +215,7 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
             const canvas = fabricCanvasRef.current;
             if (!canvas) return;
 
-            await loadGoogleFont(layer.fontFamily);
+            await loadFont(customFonts, layer.fontFamily);
 
             const textObject = new fabric.Textbox(layer.content, {
                 left: layer.x,
@@ -234,15 +229,24 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
                 opacity: layer.opacity,
                 textAlign: layer.alignment,
                 angle: layer.rotation,
-                cornerStyle: "circle",
-                cornerColor: "#4f46e5",
+                cornerStyle: 'circle',
+                cornerColor: '#4f46e5',
                 cornerSize: 8,
                 transparentCorners: false,
-                borderColor: "#4f46e5",
+                borderColor: '#4f46e5',
                 borderScaleFactor: 2,
                 padding: 8,
                 splitByGrapheme: true,
                 data: { layerId: layer.id },
+                selectable: !layer.isLocked,
+                evented: !layer.isLocked,
+                hasControls: !layer.isLocked,
+                hasBorders: !layer.isLocked,
+                lockMovementX: layer.isLocked,
+                lockMovementY: layer.isLocked,
+                lockRotation: layer.isLocked,
+                lockScalingX: layer.isLocked,
+                lockScalingY: layer.isLocked
             });
 
             canvas.add(textObject);
@@ -251,39 +255,35 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
             }
         }, []);
 
-        const updateFabricTextObject = useCallback(
-            async (fabricObject: fabric.Textbox, layer: TextLayer) => {
-                const canvas = fabricCanvasRef.current;
-                if (!canvas) return;
+        const updateFabricTextObject = useCallback(async (fabricObject: fabric.Textbox, layer: TextLayer) => {
+            const canvas = fabricCanvasRef.current;
+            if (!canvas) return;
 
-                await loadGoogleFont(layer.fontFamily);
+            await loadFont(customFonts, layer.fontFamily);
 
-                fabricObject.set({
-                    text: layer.content,
-                    left: layer.x,
-                    top: layer.y,
-                    width: layer.width,
-                    height: layer.height,
-                    fontSize: layer.fontSize,
-                    fontFamily: layer.fontFamily,
-                    fontWeight: layer.fontWeight,
-                    fill: layer.color,
-                    opacity: layer.opacity,
-                    textAlign: layer.alignment,
-                    angle: layer.rotation,
-                });
+            fabricObject.set({
+                text: layer.content,
+                left: layer.x,
+                top: layer.y,
+                width: layer.width,
+                height: layer.height,
+                fontSize: layer.fontSize,
+                fontFamily: layer.fontFamily,
+                fontWeight: layer.fontWeight,
+                fill: layer.color,
+                opacity: layer.opacity,
+                textAlign: layer.alignment,
+                angle: layer.rotation,
+                selectable: !layer.isLocked,
+                evented: !layer.isLocked
+            });
 
-                if (layer.isSelected && canvas.getActiveObject() !== fabricObject) {
-                    canvas.setActiveObject(fabricObject);
-                } else if (
-                    !layer.isSelected &&
-                    canvas.getActiveObject() === fabricObject
-                ) {
-                    canvas.discardActiveObject();
-                }
-            },
-            [],
-        );
+            if (layer.isSelected && canvas.getActiveObject() !== fabricObject) {
+                canvas.setActiveObject(fabricObject);
+            } else if (!layer.isSelected && canvas.getActiveObject() === fabricObject) {
+                canvas.discardActiveObject();
+            }
+        }, []);
 
         useEffect(() => {
             const canvas = fabricCanvasRef.current;
@@ -300,9 +300,9 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
             });
 
             textLayers.forEach((layer) => {
-                const fabricObject = objectsOnCanvas.find(
-                    (obj) => (obj as any).data?.layerId === layer.id,
-                ) as fabric.Textbox | undefined;
+                const fabricObject = objectsOnCanvas.find((obj) => (obj as any).data?.layerId === layer.id) as
+                    | fabric.Textbox
+                    | undefined;
 
                 if (fabricObject) {
                     updateFabricTextObject(fabricObject, layer);
@@ -318,16 +318,16 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
             <div className={`relative ${className}`}>
                 <canvas
                     ref={canvasRef}
-                    className="border border-gray-300 shadow-lg"
+                    className='border border-gray-300 shadow-lg'
                     style={{
-                        maxWidth: "100%",
-                        maxHeight: "100%",
-                        objectFit: "contain",
+                        maxWidth: '100%',
+                        maxHeight: '100%',
+                        objectFit: 'contain'
                     }}
                 />
             </div>
         );
-    },
+    }
 );
 
-FabricCanvas.displayName = "FabricCanvas";
+FabricCanvas.displayName = 'FabricCanvas';

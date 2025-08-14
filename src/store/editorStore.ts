@@ -1,11 +1,12 @@
-import { create } from "zustand";
-import { subscribeWithSelector } from "zustand/middleware";
-import type { EditorState, TextLayer } from "@/types";
+import type { EditorState, TextLayer } from '@/types';
+
+import { create } from 'zustand';
+import { subscribeWithSelector } from 'zustand/middleware';
 
 interface EditorStore extends EditorState {
     selectedLayerIds: string[];
     setBackgroundImage: (imageUrl: string, width: number, height: number) => void;
-    addTextLayer: (layer: Omit<TextLayer, "id" | "zIndex">) => void;
+    addTextLayer: (layer: Omit<TextLayer, 'id' | 'zIndex'>) => void;
     updateTextLayer: (id: string, updates: Partial<TextLayer>) => void;
     updateTextLayerImmediate: (id: string, updates: Partial<TextLayer>) => void;
     updateMultipleLayers: (ids: string[], updates: Partial<TextLayer>) => void;
@@ -25,6 +26,7 @@ interface EditorStore extends EditorState {
     reset: () => void;
     saveToLocalStorage: () => void;
     loadFromLocalStorage: () => void;
+    addCustomFont: (name: string, src: string) => void;
 }
 
 const initialState: EditorState & { selectedLayerIds: string[] } = {
@@ -37,9 +39,10 @@ const initialState: EditorState & { selectedLayerIds: string[] } = {
     history: [],
     historyIndex: -1,
     isLoading: false,
+    customFonts: []
 };
 
-const STORAGE_KEY = "image-text-composer-state";
+const STORAGE_KEY = 'image-text-composer-state';
 const MAX_HISTORY = 20;
 
 export const useEditorStore = create<EditorStore>()(
@@ -55,7 +58,7 @@ export const useEditorStore = create<EditorStore>()(
                     imageHeight: height,
                     textLayers: [],
                     selectedLayerId: null,
-                    selectedLayerIds: [],
+                    selectedLayerIds: []
                 };
                 return addToHistory(newState, state);
             });
@@ -70,14 +73,14 @@ export const useEditorStore = create<EditorStore>()(
                     id,
                     zIndex: maxZ + 1,
                     isSelected: false,
-                    isLocked: false,
+                    isLocked: false
                 };
 
                 const newState = {
                     ...state,
                     textLayers: [...state.textLayers, newLayer],
                     selectedLayerId: id,
-                    selectedLayerIds: [id],
+                    selectedLayerIds: [id]
                 };
                 return addToHistory(newState, state);
             });
@@ -85,16 +88,14 @@ export const useEditorStore = create<EditorStore>()(
 
         updateTextLayer: (id, updates) => {
             set((state) => {
-                const layer = state.textLayers.find(l => l.id === id);
-                if (layer?.isLocked && Object.keys(updates).some(key => key !== 'isSelected' && key !== 'isLocked')) {
+                const layer = state.textLayers.find((l) => l.id === id);
+                if (layer?.isLocked && Object.keys(updates).some((key) => key !== 'isSelected' && key !== 'isLocked')) {
                     return state;
                 }
 
                 const newState = {
                     ...state,
-                    textLayers: state.textLayers.map((layer) =>
-                        layer.id === id ? { ...layer, ...updates } : layer,
-                    ),
+                    textLayers: state.textLayers.map((layer) => (layer.id === id ? { ...layer, ...updates } : layer))
                 };
                 return addToHistory(newState, state);
             });
@@ -102,16 +103,14 @@ export const useEditorStore = create<EditorStore>()(
 
         updateTextLayerImmediate: (id, updates) => {
             set((state) => {
-                const layer = state.textLayers.find(l => l.id === id);
-                if (layer?.isLocked && Object.keys(updates).some(key => key !== 'isSelected' && key !== 'isLocked')) {
+                const layer = state.textLayers.find((l) => l.id === id);
+                if (layer?.isLocked && Object.keys(updates).some((key) => key !== 'isSelected' && key !== 'isLocked')) {
                     return state;
                 }
 
                 return {
                     ...state,
-                    textLayers: state.textLayers.map((layer) =>
-                        layer.id === id ? { ...layer, ...updates } : layer,
-                    ),
+                    textLayers: state.textLayers.map((layer) => (layer.id === id ? { ...layer, ...updates } : layer))
                 };
             });
         },
@@ -125,7 +124,7 @@ export const useEditorStore = create<EditorStore>()(
                             return { ...layer, ...updates };
                         }
                         return layer;
-                    }),
+                    })
                 };
                 return addToHistory(newState, state);
             });
@@ -139,13 +138,13 @@ export const useEditorStore = create<EditorStore>()(
                         return { ...layer, ...updates };
                     }
                     return layer;
-                }),
+                })
             }));
         },
 
         deleteTextLayer: (id) => {
             set((state) => {
-                const layer = state.textLayers.find(l => l.id === id);
+                const layer = state.textLayers.find((l) => l.id === id);
                 if (layer?.isLocked) {
                     return state;
                 }
@@ -154,7 +153,7 @@ export const useEditorStore = create<EditorStore>()(
                     ...state,
                     textLayers: state.textLayers.filter((layer) => layer.id !== id),
                     selectedLayerId: state.selectedLayerId === id ? null : state.selectedLayerId,
-                    selectedLayerIds: state.selectedLayerIds.filter(layerId => layerId !== id),
+                    selectedLayerIds: state.selectedLayerIds.filter((layerId) => layerId !== id)
                 };
                 return addToHistory(newState, state);
             });
@@ -162,8 +161,8 @@ export const useEditorStore = create<EditorStore>()(
 
         deleteMultipleLayers: (ids) => {
             set((state) => {
-                const unlocked = ids.filter(id => {
-                    const layer = state.textLayers.find(l => l.id === id);
+                const unlocked = ids.filter((id) => {
+                    const layer = state.textLayers.find((l) => l.id === id);
                     return !layer?.isLocked;
                 });
 
@@ -173,7 +172,7 @@ export const useEditorStore = create<EditorStore>()(
                     ...state,
                     textLayers: state.textLayers.filter((layer) => !unlocked.includes(layer.id)),
                     selectedLayerId: unlocked.includes(state.selectedLayerId as any) ? null : state.selectedLayerId,
-                    selectedLayerIds: state.selectedLayerIds.filter(id => !unlocked.includes(id)),
+                    selectedLayerIds: state.selectedLayerIds.filter((id) => !unlocked.includes(id))
                 };
                 return addToHistory(newState, state);
             });
@@ -185,7 +184,7 @@ export const useEditorStore = create<EditorStore>()(
 
                 if (multiSelect && id) {
                     newSelectedIds = state.selectedLayerIds.includes(id)
-                        ? state.selectedLayerIds.filter(layerId => layerId !== id)
+                        ? state.selectedLayerIds.filter((layerId) => layerId !== id)
                         : [...state.selectedLayerIds, id];
                 } else {
                     newSelectedIds = id ? [id] : [];
@@ -197,22 +196,31 @@ export const useEditorStore = create<EditorStore>()(
                     selectedLayerIds: newSelectedIds,
                     textLayers: state.textLayers.map((layer) => ({
                         ...layer,
-                        isSelected: newSelectedIds.includes(layer.id),
-                    })),
+                        isSelected: newSelectedIds.includes(layer.id)
+                    }))
                 };
             });
         },
 
         selectMultipleLayers: (ids) => {
-            set((state) => ({
-                ...state,
-                selectedLayerId: ids.length === 1 ? ids[0] : null,
-                selectedLayerIds: ids,
-                textLayers: state.textLayers.map((layer) => ({
-                    ...layer,
-                    isSelected: ids.includes(layer.id),
-                })),
-            }));
+            set((state) => {
+                if (
+                    ids.length === state.selectedLayerIds.length &&
+                    ids.every((id) => state.selectedLayerIds.includes(id))
+                ) {
+                    return state;
+                }
+
+                return {
+                    ...state,
+                    selectedLayerId: ids.length === 1 ? ids[0] : null,
+                    selectedLayerIds: ids,
+                    textLayers: state.textLayers.map((layer) => ({
+                        ...layer,
+                        isSelected: ids.includes(layer.id)
+                    }))
+                };
+            });
         },
 
         clearSelection: () => {
@@ -222,8 +230,8 @@ export const useEditorStore = create<EditorStore>()(
                 selectedLayerIds: [],
                 textLayers: state.textLayers.map((layer) => ({
                     ...layer,
-                    isSelected: false,
-                })),
+                    isSelected: false
+                }))
             }));
         },
 
@@ -232,8 +240,8 @@ export const useEditorStore = create<EditorStore>()(
                 const newState = {
                     ...state,
                     textLayers: state.textLayers.map((layer) =>
-                        layer.id === id ? { ...layer, isLocked: !layer.isLocked } : layer,
-                    ),
+                        layer.id === id ? { ...layer, isLocked: !layer.isLocked } : layer
+                    )
                 };
                 return addToHistory(newState, state);
             });
@@ -241,17 +249,15 @@ export const useEditorStore = create<EditorStore>()(
 
         moveLayerUp: (id) => {
             set((state) => {
-                const layer = state.textLayers.find(l => l.id === id);
+                const layer = state.textLayers.find((l) => l.id === id);
                 if (layer?.isLocked) return state;
 
-                const currentIndex = state.textLayers.findIndex(
-                    (layer) => layer.id === id,
-                );
+                const currentIndex = state.textLayers.findIndex((layer) => layer.id === id);
                 if (currentIndex < state.textLayers.length - 1) {
                     const newLayers = [...state.textLayers];
                     [newLayers[currentIndex], newLayers[currentIndex + 1]] = [
                         newLayers[currentIndex + 1],
-                        newLayers[currentIndex],
+                        newLayers[currentIndex]
                     ];
 
                     newLayers.forEach((layer, index) => {
@@ -260,7 +266,7 @@ export const useEditorStore = create<EditorStore>()(
 
                     const newState = {
                         ...state,
-                        textLayers: newLayers,
+                        textLayers: newLayers
                     };
                     return addToHistory(newState, state);
                 }
@@ -270,17 +276,15 @@ export const useEditorStore = create<EditorStore>()(
 
         moveLayerDown: (id) => {
             set((state) => {
-                const layer = state.textLayers.find(l => l.id === id);
+                const layer = state.textLayers.find((l) => l.id === id);
                 if (layer?.isLocked) return state;
 
-                const currentIndex = state.textLayers.findIndex(
-                    (layer) => layer.id === id,
-                );
+                const currentIndex = state.textLayers.findIndex((layer) => layer.id === id);
                 if (currentIndex > 0) {
                     const newLayers = [...state.textLayers];
                     [newLayers[currentIndex], newLayers[currentIndex - 1]] = [
                         newLayers[currentIndex - 1],
-                        newLayers[currentIndex],
+                        newLayers[currentIndex]
                     ];
 
                     newLayers.forEach((layer, index) => {
@@ -289,7 +293,7 @@ export const useEditorStore = create<EditorStore>()(
 
                     const newState = {
                         ...state,
-                        textLayers: newLayers,
+                        textLayers: newLayers
                     };
                     return addToHistory(newState, state);
                 }
@@ -311,14 +315,14 @@ export const useEditorStore = create<EditorStore>()(
                     y: originalLayer.y + 20,
                     zIndex: maxZ + 1,
                     isSelected: false,
-                    isLocked: false,
+                    isLocked: false
                 };
 
                 const newState = {
                     ...state,
                     textLayers: [...state.textLayers, duplicatedLayer],
                     selectedLayerId: newId,
-                    selectedLayerIds: [newId],
+                    selectedLayerIds: [newId]
                 };
                 return addToHistory(newState, state);
             });
@@ -326,7 +330,7 @@ export const useEditorStore = create<EditorStore>()(
 
         duplicateMultipleLayers: (ids) => {
             set((state) => {
-                const originalLayers = state.textLayers.filter(l => ids.includes(l.id));
+                const originalLayers = state.textLayers.filter((l) => ids.includes(l.id));
                 if (originalLayers.length === 0) return state;
 
                 const maxZ = Math.max(...state.textLayers.map((l) => l.zIndex), 0);
@@ -342,7 +346,7 @@ export const useEditorStore = create<EditorStore>()(
                         y: layer.y + 20,
                         zIndex: maxZ + 1 + index,
                         isSelected: false,
-                        isLocked: false,
+                        isLocked: false
                     };
                     newLayers.push(duplicatedLayer);
                     newIds.push(newId);
@@ -352,7 +356,7 @@ export const useEditorStore = create<EditorStore>()(
                     ...state,
                     textLayers: [...state.textLayers, ...newLayers],
                     selectedLayerId: newIds.length === 1 ? newIds[0] : null,
-                    selectedLayerIds: newIds,
+                    selectedLayerIds: newIds
                 };
                 return addToHistory(newState, state);
             });
@@ -366,7 +370,7 @@ export const useEditorStore = create<EditorStore>()(
                         ...previousState,
                         history: state.history,
                         historyIndex: state.historyIndex - 1,
-                        selectedLayerIds: previousState.selectedLayerId ? [previousState.selectedLayerId] : [],
+                        selectedLayerIds: previousState.selectedLayerId ? [previousState.selectedLayerId] : []
                     };
                 }
                 return state;
@@ -381,7 +385,7 @@ export const useEditorStore = create<EditorStore>()(
                         ...nextState,
                         history: state.history,
                         historyIndex: state.historyIndex + 1,
-                        selectedLayerIds: nextState.selectedLayerId ? [nextState.selectedLayerId] : [],
+                        selectedLayerIds: nextState.selectedLayerId ? [nextState.selectedLayerId] : []
                     };
                 }
                 return state;
@@ -402,6 +406,7 @@ export const useEditorStore = create<EditorStore>()(
                 textLayers: state.textLayers,
                 selectedLayerId: state.selectedLayerId,
                 selectedLayerIds: state.selectedLayerIds,
+                customFonts: state.customFonts
             };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
         },
@@ -411,24 +416,64 @@ export const useEditorStore = create<EditorStore>()(
             if (saved) {
                 try {
                     const parsedState = JSON.parse(saved);
-                    set((state) => ({
-                        ...state,
-                        ...parsedState,
-                        selectedLayerIds: parsedState.selectedLayerIds || (parsedState.selectedLayerId ? [parsedState.selectedLayerId] : []),
-                        history: [parsedState],
-                        historyIndex: 0,
-                    }));
+                    set((state) => {
+                        parsedState.customFonts?.forEach((font: { name: string; src: string }) => {
+                            const fontFace = new FontFace(font.name, `url(${font.src})`);
+                            fontFace
+                                .load()
+                                .then((loadedFont) => {
+                                    document.fonts.add(loadedFont);
+                                })
+                                .catch((error) => {
+                                    console.error(`Failed to load font ${font.name}:`, error);
+                                });
+                        });
+
+                        return {
+                            ...state,
+                            ...parsedState,
+                            selectedLayerIds:
+                                parsedState.selectedLayerIds ||
+                                (parsedState.selectedLayerId ? [parsedState.selectedLayerId] : []),
+                            history: [parsedState],
+                            historyIndex: 0
+                        };
+                    });
                 } catch (error) {
-                    console.error("Failed to load from localStorage:", error);
+                    console.error('Failed to load from localStorage:', error);
                 }
             }
         },
-    })),
+
+        addCustomFont: (name, src) => {
+            set((state) => {
+                if (state.customFonts.some((font) => font.name === name)) {
+                    return state;
+                }
+
+                const fontFace = new FontFace(name, `url(${src})`);
+                fontFace
+                    .load()
+                    .then((loadedFont) => {
+                        document.fonts.add(loadedFont);
+                    })
+                    .catch((error) => {
+                        console.error(`Failed to load font ${name}:`, error);
+                    });
+
+                const newState = {
+                    ...state,
+                    customFonts: [...state.customFonts, { name, src }]
+                };
+                return addToHistory(newState, state);
+            });
+        }
+    }))
 );
 
 function addToHistory(
     newState: EditorState & { selectedLayerIds: string[] },
-    currentState: EditorState & { selectedLayerIds: string[] },
+    currentState: EditorState & { selectedLayerIds: string[] }
 ): EditorState & { selectedLayerIds: string[] } {
     const stateToAdd = {
         backgroundImage: newState.backgroundImage,
@@ -439,18 +484,17 @@ function addToHistory(
         selectedLayerIds: newState.selectedLayerIds,
         isLoading: newState.isLoading,
         history: [],
-        historyIndex: 0,
+        historyIndex: 0
     };
 
-    const newHistory = [
-        ...currentState.history.slice(0, currentState.historyIndex + 1),
-        stateToAdd,
-    ].slice(-MAX_HISTORY);
+    const newHistory = [...currentState.history.slice(0, currentState.historyIndex + 1), stateToAdd].slice(
+        -MAX_HISTORY
+    );
 
     return {
         ...newState,
         history: newHistory,
-        historyIndex: newHistory.length - 1,
+        historyIndex: newHistory.length - 1
     };
 }
 
@@ -461,7 +505,7 @@ useEditorStore.subscribe(
         textLayers: state.textLayers,
         imageWidth: state.imageWidth,
         imageHeight: state.imageHeight,
-        selectedLayerIds: state.selectedLayerIds,
+        selectedLayerIds: state.selectedLayerIds
     }),
     () => {
         if (saveTimeout) {
@@ -475,5 +519,5 @@ useEditorStore.subscribe(
             }
         }, 1000);
     },
-    { fireImmediately: false },
+    { fireImmediately: false }
 );
