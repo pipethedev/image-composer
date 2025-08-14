@@ -236,7 +236,7 @@ export const PropertiesPanel: React.FC = () => {
                     type='file'
                     accept='.ttf,.otf'
                     onChange={handleFontUpload}
-                    className='text-sm'
+                    className='text-sm cursor-pointer'
                     disabled={allLayersLocked}
                 />
             </div>
