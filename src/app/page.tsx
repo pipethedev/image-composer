@@ -1,4 +1,5 @@
 'use client';
+import 'regenerator-runtime/runtime';
 
 import { useCallback, useEffect, useRef } from 'react';
 
@@ -65,7 +66,7 @@ export default function EditorPage() {
             isSelected: true
         };
 
-        addTextLayer(newLayer);
+        addTextLayer(newLayer as any);
     }, [addTextLayer, backgroundImage, imageWidth, imageHeight]);
 
     const handleExport = useCallback(() => {

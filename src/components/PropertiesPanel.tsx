@@ -129,6 +129,8 @@ export const PropertiesPanel: React.FC = () => {
     const commonOpacity = getCommonValue((layer) => layer.opacity);
     const commonAlignment = getCommonValue((layer) => layer.alignment);
     const commonRotation = getCommonValue((layer) => layer.rotation);
+    const commonLineHeight = getCommonValue((layer) => layer.lineHeight ?? 1.16);
+    const commonLetterSpacing = getCommonValue((layer) => layer.letterSpacing ?? 0);
 
     if (selectedLayerIds.length === 0) {
         return (
@@ -277,6 +279,34 @@ export const PropertiesPanel: React.FC = () => {
                         ))}
                     </SelectContent>
                 </Select>
+            </div>
+
+            <div className='space-y-2'>
+                <Label htmlFor='lineHeight'>
+                    Line Height: {commonLineHeight !== null ? commonLineHeight.toFixed(2) : 'Mixed'}
+                </Label>
+                <Slider
+                    value={commonLineHeight !== null ? [commonLineHeight] : [1.16]}
+                    onValueChange={(value) => handleUpdate({ lineHeight: value[0] })}
+                    min={0.8}
+                    max={3}
+                    step={0.01}
+                    disabled={allLayersLocked}
+                />
+            </div>
+
+            <div className='space-y-2'>
+                <Label htmlFor='letterSpacing'>
+                    Letter Spacing: {commonLetterSpacing !== null ? `${commonLetterSpacing}px` : 'Mixed'}
+                </Label>
+                <Slider
+                    value={commonLetterSpacing !== null ? [commonLetterSpacing] : [0]}
+                    onValueChange={(value) => handleUpdate({ letterSpacing: value[0] })}
+                    min={-10}
+                    max={50}
+                    step={1}
+                    disabled={allLayersLocked}
+                />
             </div>
 
             <div className='space-y-2'>

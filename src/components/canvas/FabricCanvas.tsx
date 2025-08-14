@@ -43,8 +43,6 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
             }
         }));
 
-
-
         const updateLayerFromFabricObject = useCallback(
             (fabricObject: fabric.Object) => {
                 const layerId = (fabricObject as any).data?.layerId;
@@ -116,7 +114,7 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
                 }
             });
 
-            canvas.on('editing:exited', (e: any) => {
+            canvas.on('text:editing:exited', (e: any) => {
                 const target = e.target as fabric.Textbox;
                 const layerId = (target as any).data?.layerId;
                 if (layerId && target.text) {
@@ -229,6 +227,8 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
                 opacity: layer.opacity,
                 textAlign: layer.alignment,
                 angle: layer.rotation,
+                lineHeight: layer.lineHeight ?? 1.16,
+                charSpacing: layer.letterSpacing ? (layer.letterSpacing * 1000) / layer.fontSize : 0,
                 cornerStyle: 'circle',
                 cornerColor: '#4f46e5',
                 cornerSize: 8,
@@ -274,6 +274,8 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
                 opacity: layer.opacity,
                 textAlign: layer.alignment,
                 angle: layer.rotation,
+                lineHeight: layer.lineHeight ?? 1.16,
+                charSpacing: layer.letterSpacing ? (layer.letterSpacing * 1000) / layer.fontSize : 0,
                 selectable: !layer.isLocked,
                 evented: !layer.isLocked
             });

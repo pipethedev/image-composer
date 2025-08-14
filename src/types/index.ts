@@ -1,3 +1,5 @@
+import { SVGProps } from "react";
+
 export interface TextLayer {
     id: string;
     content: string;
@@ -15,6 +17,8 @@ export interface TextLayer {
     zIndex: number;
     isSelected: boolean;
     isLocked: boolean;
+    lineHeight?: number;
+    letterSpacing?: number;
 }
 
 export interface EditorState {
@@ -33,4 +37,9 @@ export interface EditorState {
 export interface HistoryAction {
     type: 'ADD_LAYER' | 'UPDATE_LAYER' | 'DELETE_LAYER' | 'REORDER_LAYERS' | 'SET_BACKGROUND';
     payload: any;
+}
+
+export interface SVGIconProps extends SVGProps<SVGSVGElement> {
+    title?: string;
+    titleId?: string;
 }

@@ -40,7 +40,7 @@ export const Toolbar: React.FC = () => {
             isSelected: true
         };
 
-        addTextLayer(newLayer);
+        addTextLayer(newLayer as any);
     };
 
     const handleDuplicate = () => {

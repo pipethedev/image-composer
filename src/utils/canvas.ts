@@ -17,45 +17,31 @@ export const loadImage = (src: string): Promise<HTMLImageElement> => {
 
 export const loadFont = async (customFonts: any[], fontFamily: string): Promise<void> => {
     if (document.fonts.check(`16px "${fontFamily}"`)) {
-      return;
+        return;
     }
 
     const customFont = customFonts.find((font) => font.name === fontFamily);
     if (customFont) {
-      try {
-        const fontFace = new FontFace(fontFamily, `url(${customFont.src})`);
-        await fontFace.load();
-        document.fonts.add(fontFace);
-      } catch (error) {
-        console.error(`Failed to load custom font ${fontFamily}:`, error);
-      }
-      return;
-    }
-
-    try {
-      const link = document.createElement('link');
-      link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(
-        /\s+/g,
-        '+'
-      )}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
-      link.rel = 'stylesheet';
-      document.head.appendChild(link);
-      await document.fonts.load(`16px "${fontFamily}"`);
-    } catch (error) {
-      console.error(`Failed to load Google Font ${fontFamily}:`, error);
-    }
-  };
-
-
-export const loadGoogleFont = async (fontFamily: string): Promise<void> => {
-    if (document.fonts.check(`16px "${fontFamily}"`)) {
+        try {
+            const fontFace = new FontFace(fontFamily, `url(${customFont.src})`);
+            await fontFace.load();
+            document.fonts.add(fontFace);
+        } catch (error) {
+            console.error(`Failed to load custom font ${fontFamily}:`, error);
+        }
         return;
     }
 
-    const link = document.createElement('link');
-    link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/\s+/g, '+')}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
-    link.rel = 'stylesheet';
-    document.head.appendChild(link);
-
-    await document.fonts.load(`16px "${fontFamily}"`);
+    try {
+        const link = document.createElement('link');
+        link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(
+            /\s+/g,
+            '+'
+        )}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
+        link.rel = 'stylesheet';
+        document.head.appendChild(link);
+        await document.fonts.load(`16px "${fontFamily}"`);
+    } catch (error) {
+        console.error(`Failed to load Google Font ${fontFamily}:`, error);
+    }
 };

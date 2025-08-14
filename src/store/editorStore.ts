@@ -73,7 +73,9 @@ export const useEditorStore = create<EditorStore>()(
                     id,
                     zIndex: maxZ + 1,
                     isSelected: false,
-                    isLocked: false
+                    isLocked: false,
+                    lineHeight: layer.lineHeight ?? 1.16,
+                    letterSpacing: layer.letterSpacing ?? 0
                 };
 
                 const newState = {
@@ -483,6 +485,7 @@ function addToHistory(
         selectedLayerId: newState.selectedLayerId,
         selectedLayerIds: newState.selectedLayerIds,
         isLoading: newState.isLoading,
+        customFonts: newState.customFonts,
         history: [],
         historyIndex: 0
     };
