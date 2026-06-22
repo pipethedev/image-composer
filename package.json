@@ -1,6 +1,7 @@
 {
     "name": "image-text-composer",
     "version": "1.0.0",
+    "packageManager": "pnpm@10.17.0",
     "description": "A desktop image editing tool for adding customizable text overlays to PNG images",
     "keywords": [
         "image-editor",
